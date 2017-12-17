@@ -16,12 +16,10 @@ fn main() {
     let filename = matches.value_of("filename").unwrap();
     let part = matches.value_of("part").unwrap_or("1");
 
-    let mut file = File::open(filename).
-        expect("File not found");
+    let mut file = File::open(filename).unwrap();
 
     let mut contents = String::new();
-    file.read_to_string(&mut contents)
-        .expect("Something went wrong when reading the file");
+    file.read_to_string(&mut contents).unwrap();
     contents = contents.trim().to_string();
 
     let skip: usize = match part {
