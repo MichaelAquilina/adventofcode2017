@@ -50,3 +50,26 @@ fn solve(contents: &str, skip: usize) -> u32 {
     }
     return total;
 }
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_part1() {
+        assert_eq!(solve("1122", 1), 3);
+        assert_eq!(solve("1111", 1), 4);
+        assert_eq!(solve("1234", 1), 0);
+        assert_eq!(solve("91212129", 1), 9);
+    }
+
+    #[test]
+    fn test_part2() {
+        assert_eq!(solve("1212", 2), 6);
+        assert_eq!(solve("1221", 2), 0);
+        assert_eq!(solve("123425", 3), 4);
+        assert_eq!(solve("123123", 3), 12);
+        assert_eq!(solve("12131415", 4), 4);
+    }
+}
