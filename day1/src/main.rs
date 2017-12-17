@@ -24,10 +24,9 @@ fn main() {
         .expect("Something went wrong when reading the file");
     contents = contents.trim().to_string();
 
-    let skip: usize = if part == "1" {
-        1
-    } else {
-        contents.len() / 2
+    let skip: usize = match part {
+        "1" => 1,
+        _ => contents.len() / 2,
     };
 
     let result = solve(&contents[..], skip);
