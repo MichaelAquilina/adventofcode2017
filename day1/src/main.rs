@@ -30,12 +30,12 @@ fn main() {
         contents.len() / 2
     };
 
-    let result = solve(&contents, skip);
+    let result = solve(&contents[..], skip);
     println!("{}", result);
 }
 
 
-fn solve(contents: &String, skip: usize) -> u32 {
+fn solve(contents: &str, skip: usize) -> u32 {
     let length = contents.len();
     let mut total: u32 = 0;
     let mut index: usize = 0;
