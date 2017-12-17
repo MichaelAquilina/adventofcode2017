@@ -29,7 +29,7 @@ fn main() {
         _ => contents.len() / 2,
     };
 
-    let result = solve(&contents[..], skip);
+    let result = solve(&contents, skip);
     println!("{}", result);
 }
 
