@@ -25,13 +25,11 @@ fn main() {
     contents = contents.trim().to_string();
 
     let length = contents.len();
-    let skip: usize;
-
-    if part == "1" {
-        skip = 1;
+    let skip: usize = if part == "1" {
+        1
     } else {
-        skip = length / 2;
-    }
+        length / 2
+    };
 
     let mut total: u32 = 0;
     let mut index: usize = 0;
