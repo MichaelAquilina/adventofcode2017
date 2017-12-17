@@ -24,13 +24,19 @@ fn main() {
         .expect("Something went wrong when reading the file");
     contents = contents.trim().to_string();
 
-    let length = contents.len();
     let skip: usize = if part == "1" {
         1
     } else {
-        length / 2
+        contents.len() / 2
     };
 
+    let result = solve(&contents, skip);
+    println!("{}", result);
+}
+
+
+fn solve(contents: &String, skip: usize) -> u32 {
+    let length = contents.len();
     let mut total: u32 = 0;
     let mut index: usize = 0;
     while index < length {
@@ -45,5 +51,5 @@ fn main() {
 
         index += 1;
     }
-    println!("{}", total);
+    return total;
 }
