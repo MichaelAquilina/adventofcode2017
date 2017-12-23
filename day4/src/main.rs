@@ -36,7 +36,7 @@ pub fn valid_passphrase(phrase: &str, check_anagrams: bool) -> bool {
             token.to_string()
         } else {
             let mut c: Vec<char> = token.chars().collect();
-            c.sort();
+            c.sort_unstable();
             c.iter().collect()
         };
 
