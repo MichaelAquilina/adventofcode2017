@@ -10,9 +10,14 @@ fn main() {
     let matches = App::new("Advent of Code - Day 4")
         .arg(Arg::with_name("filename")
              .required(true))
+        .arg(Arg::with_name("part")
+             .possible_values(&["1", "2"]))
         .get_matches();
 
     let filename = matches.value_of("filename").unwrap();
+    let part = matches.value_of("part").unwrap_or("1");
+
+    let check_anagrams = part == "2";
 
     let mut file = File::open(filename).unwrap();
     let mut contents = String::new();
@@ -21,7 +26,7 @@ fn main() {
 
     let mut result = 0;
     for line in contents.lines() {
-        if valid_passphrase(&line, false) {
+        if valid_passphrase(&line, check_anagrams) {
             result += 1;
         }
     }
