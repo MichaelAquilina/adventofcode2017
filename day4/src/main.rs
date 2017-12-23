@@ -21,7 +21,7 @@ fn main() {
 
     let mut result = 0;
     for line in contents.lines() {
-        if valid_passphrase(&line) {
+        if valid_passphrase(&line, false) {
             result += 1;
         }
     }
@@ -29,13 +29,22 @@ fn main() {
 }
 
 
-pub fn valid_passphrase(phrase: &str) -> bool {
+pub fn valid_passphrase(phrase: &str, check_anagrams: bool) -> bool {
     let mut token_set = HashSet::new();
     for token in phrase.split_whitespace() {
-        if token_set.contains(token) {
+        let key = if !check_anagrams {
+            token.to_string()
+        } else {
+            let mut c: Vec<char> = token.chars().collect();
+            c.sort();
+            c.iter().collect()
+        };
+
+        println!("{}", key);
+        if token_set.contains(&key) {
             return false;
         } else {
-            token_set.insert(token);
+            token_set.insert(key);
         }
     }
     true
@@ -48,8 +57,11 @@ mod test {
 
     #[test]
     fn passphrase() {
-        assert!(valid_passphrase(""));
-        assert!(valid_passphrase("aa bb cc dd"));
-        assert!(!valid_passphrase("aa aa bb"));
+        assert!(valid_passphrase("", false));
+        assert!(valid_passphrase("aa bb cc dd", false));
+        assert!(!valid_passphrase("aa aa bb", false));
+
+        assert!(valid_passphrase("abcde fghij", true));
+        assert!(!valid_passphrase("abcde xyz ecdab", true));
     }
 }
