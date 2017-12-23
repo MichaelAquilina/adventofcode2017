@@ -40,7 +40,6 @@ pub fn valid_passphrase(phrase: &str, check_anagrams: bool) -> bool {
             c.iter().collect()
         };
 
-        println!("{}", key);
         if token_set.contains(&key) {
             return false;
         } else {
