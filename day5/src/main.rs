@@ -31,7 +31,7 @@ fn main() {
 }
 
 
-pub fn execute(instructions: &mut Vec<i32>, simple: bool) -> u32 {
+pub fn execute(instructions: &mut [i32], simple: bool) -> u32 {
     let mut index: i32 = 0;
     let mut counter: u32 = 0;
     let size = instructions.len() as i32;
