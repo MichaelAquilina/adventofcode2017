@@ -9,9 +9,14 @@ fn main() {
     let matches = App::new("Advent of Code - Day 5")
         .arg(Arg::with_name("filename")
              .required(true))
+        .arg(Arg::with_name("part")
+             .possible_values(&["1", "2"]))
         .get_matches();
 
     let filename = matches.value_of("filename").unwrap();
+    let part = matches.value_of("part").unwrap_or("1");
+
+    let simple = part == "1";
 
     let mut file = File::open(filename).unwrap();
     let mut contents = String::new();
@@ -20,13 +25,13 @@ fn main() {
     contents = contents.trim().to_string();
 
     let mut instructions = parse(&contents);
-    let result = execute(&mut instructions);
+    let result = execute(&mut instructions, simple);
 
     println!("{}", result);
 }
 
 
-pub fn execute(instructions: &mut Vec<i32>) -> u32 {
+pub fn execute(instructions: &mut Vec<i32>, simple: bool) -> u32 {
     let mut index: i32 = 0;
     let mut counter: u32 = 0;
     let size = instructions.len() as i32;
@@ -38,7 +43,12 @@ pub fn execute(instructions: &mut Vec<i32>) -> u32 {
 
         counter += 1;
         let jump = instructions[index as usize];
-        instructions[index as usize] = jump + 1;
+
+        instructions[index as usize] = if !simple && jump >= 3 {
+            jump -1
+        } else {
+            jump + 1
+        };
         index = index + jump;
     }
     counter
@@ -62,13 +72,19 @@ mod test {
     #[test]
     fn execute_empty() {
         let mut instructions = vec![];
-        assert_eq!(execute(&mut instructions), 0);
+        assert_eq!(execute(&mut instructions, true), 0);
     }
 
     #[test]
     fn execute_correct() {
         let mut instructions = vec![0, 3, 0, 1, -3];
-        assert_eq!(execute(&mut instructions), 5);
+        assert_eq!(execute(&mut instructions, true), 5);
+    }
+
+    #[test]
+    fn execute_part2() {
+        let mut instructions = vec![0, 3 ,0 ,1, -3];
+        assert_eq!(execute(&mut instructions, false), 10);
     }
 
     #[test]
