@@ -1,6 +1,6 @@
 extern crate clap;
 
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 
@@ -23,7 +23,7 @@ fn main() {
     let mut memory = parse(&contents);
     let result = count_reallocations(&mut memory);
 
-    println!("{}", result);
+    println!("{:?}", result);
 }
 
 
@@ -44,16 +44,17 @@ pub fn max_index(collection: &[u32]) -> Option<usize> {
 }
 
 
-pub fn count_reallocations(mut memory: &mut Vec<u32>) -> u32 {
+pub fn count_reallocations(mut memory: &mut Vec<u32>) -> (u32, u32) {
     let mut counter = 0;
-    let mut seen: HashSet<Vec<u32>> = HashSet::new();
+    let mut seen: HashMap<Vec<u32>, u32> = HashMap::new();
 
     loop {
         let key = memory.clone();
-        if seen.contains(&key) {
-            return counter;
+        if seen.contains_key(&key) {
+            let prev = seen[&key];
+            return (counter, counter - prev);
         }
-        seen.insert(key);
+        seen.insert(key, counter);
 
         counter += 1;
         reallocate(&mut memory);
@@ -104,7 +105,7 @@ mod test {
     #[test]
     fn count_reallocations_correct() {
         let mut collection = vec![0, 2, 7, 0];
-        assert_eq!(count_reallocations(&mut collection), 5);
+        assert_eq!(count_reallocations(&mut collection), (5, 4));
     }
 
     #[test]
