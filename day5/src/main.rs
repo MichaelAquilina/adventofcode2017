@@ -27,20 +27,19 @@ fn main() {
 
 
 pub fn execute(instructions: &mut Vec<i32>) -> u32 {
-    let mut index = 0;
-    let mut counter = 0;
+    let mut index: i32 = 0;
+    let mut counter: u32 = 0;
     let size = instructions.len() as i32;
 
     loop {
-        counter += 1;
-        let jump = instructions[index];
-        let next: i32 = (index as i32) + jump;
-        if 0 >= next || next >= size {
+        if index < 0 || index >= size {
             break;
         }
 
-        instructions[index] = jump + 1;
-        index = next as usize;
+        counter += 1;
+        let jump = instructions[index as usize];
+        instructions[index as usize] = jump + 1;
+        index = index + jump;
     }
     counter
 }
@@ -59,6 +58,18 @@ pub fn parse(contents: &str) -> Vec<i32> {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn execute_empty() {
+        let mut instructions = vec![];
+        assert_eq!(execute(&mut instructions), 0);
+    }
+
+    #[test]
+    fn execute_correct() {
+        let mut instructions = vec![0, 3, 0, 1, -3];
+        assert_eq!(execute(&mut instructions), 5);
+    }
 
     #[test]
     fn parse_empty() {
