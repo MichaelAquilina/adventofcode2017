@@ -10,20 +10,13 @@ use clap::{Arg, App};
 use regex::Regex;
 
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Tree {
     pub children: HashMap<String, Tree>,
     pub weight: u32,
     pub name: String,
 }
 
-impl PartialEq for Tree {
-    fn eq(&self, other: &Tree) -> bool {
-        self.children == other.children &&
-        self.weight == other.weight &&
-        self.name == other.name
-    }
-}
 
 impl Tree {
     pub fn new(name: &str, weight: u32) -> Tree {
