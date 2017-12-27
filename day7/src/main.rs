@@ -94,7 +94,13 @@ fn main() {
     file.read_to_string(&mut contents).unwrap();
     contents = contents.trim().to_string();
 
-    println!("{}", contents);
+    let trees = Tree::parse(&contents);
+    for (name, tree) in trees {
+        if tree.parent == None {
+            println!("{}", name);
+            return;
+        }
+    }
 }
 
 
