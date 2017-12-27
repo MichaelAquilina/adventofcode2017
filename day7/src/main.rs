@@ -11,16 +11,16 @@ use regex::Regex;
 
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Tree {
-    pub children: HashMap<String, Tree>,
+pub struct Tree<'a> {
+    pub children: Vec<&'a str>,
     pub weight: u32,
     pub name: String,
 }
 
 
-impl Tree {
-    pub fn new(name: &str, weight: u32) -> Tree {
-        Tree { name: name.to_string(), weight, children: HashMap::new() }
+impl<'a> Tree<'a> {
+    pub fn new(name: &'a str, weight: u32, children: Vec<&'a str>) -> Tree<'a> {
+        Tree { name: name.to_string(), weight, children }
     }
 
     pub fn parse_leaf(contents: &str) -> (&str, u32) {
@@ -38,7 +38,7 @@ impl Tree {
         contents.split(",").map(|x| x.trim()).collect()
     }
 
-    pub fn parse_line(contents: &str) -> (Tree, Vec<&str>) {
+    pub fn parse_line(contents: &str) -> Tree {
         let tokens: Vec<&str> = contents.split("->").collect();
 
         let (name, weight) = Tree::parse_leaf(tokens[0].trim());
@@ -47,7 +47,17 @@ impl Tree {
         } else {
             vec![]
         };
-        (Tree::new(name, weight), children)
+        Tree::new(name, weight, children)
+    }
+
+    pub fn parse(contents: &str) -> HashMap<String, Tree> {
+        let mut trees: HashMap<String, Tree> = HashMap::new();
+        for line in contents.lines() {
+            let tree = Tree::parse_line(&line);
+            let key = tree.name.clone();
+            trees.insert(key, tree);
+        }
+        trees
     }
 }
 
@@ -74,11 +84,32 @@ fn main() {
 mod test {
     use super::*;
 
-#[test]
+    #[test]
+    fn parse_correct() {
+        let result = Tree::parse("
+test (200) -> foo, bar
+foo (100)
+bar (300)".trim());
+
+        assert_eq!(
+            result["test"],
+            Tree::new("test", 200, vec!["foo", "bar"]));
+        assert_eq!(
+            result["foo"],
+            Tree::new("foo", 100, vec![]));
+        assert_eq!(
+            result["bar"],
+            Tree::new("bar", 300, vec![]));
+    }
+
+    #[test]
     fn parse_line_correct() {
         assert_eq!(
             Tree::parse_line("test (200) -> abcd, foo, bar"),
-            (Tree::new("test", 200), vec!["abcd", "foo", "bar"])
+            Tree::new(
+                "test", 200,
+                vec!["abcd", "foo", "bar"]
+            )
         )
     }
 
