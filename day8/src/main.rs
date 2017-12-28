@@ -1,5 +1,6 @@
 extern crate clap;
 
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 
@@ -16,6 +17,7 @@ pub enum Operation {
 #[derive(Debug, Eq, PartialEq)]
 pub enum Condition {
     Equal(String, i32),
+    NotEqual(String, i32),
     Larger(String, i32),
     LargerOrEqual(String, i32),
     Smaller(String, i32),
@@ -45,8 +47,36 @@ fn main() {
     contents = contents.trim().to_string();
 
     let instructions = parse(&contents);
+    let result = execute(&instructions);
 
-    println!("{}", contents);
+    println!("{}", result);
+}
+
+
+pub fn execute(instructions: &Vec<Instruction>) -> i32 {
+    let mut registers: HashMap<&str, i32> = HashMap::new();
+
+    for instruct in instructions {
+        let satisfied = match instruct.condition {
+            Condition::Equal(ref r, v) => *registers.entry(r).or_insert(0) == v,
+            Condition::NotEqual(ref r, v) => *registers.entry(r).or_insert(0) != v,
+            Condition::Larger(ref r, v) => *registers.entry(r).or_insert(0) > v,
+            Condition::LargerOrEqual(ref r, v) => *registers.entry(r).or_insert(0) >= v,
+            Condition::Smaller(ref r, v) => *registers.entry(r).or_insert(0) < v,
+            Condition::SmallerOrEqual(ref r, v) => *registers.entry(r).or_insert(0) <= v,
+        };
+
+        if !satisfied {
+            continue;
+        }
+
+        match instruct.operation {
+            Operation::Dec(ref r, v) => *registers.entry(r).or_insert(0) -= v,
+            Operation::Inc(ref r, v) => *registers.entry(r).or_insert(0) += v,
+        };
+    }
+
+    *registers.iter().max_by_key(|x| *x.1).unwrap().1
 }
 
 
@@ -95,6 +125,7 @@ pub fn parse_condition(condition: &str) -> Option<Condition> {
     let value: i32 = tokens[2].parse().unwrap();
 
     match tokens[1] {
+        "!=" => Some(Condition::NotEqual(register, value)),
         "==" => Some(Condition::Equal(register, value)),
         ">" => Some(Condition::Larger(register, value)),
         ">=" => Some(Condition::LargerOrEqual(register, value)),
@@ -125,6 +156,17 @@ pub fn parse_operation(operation: &str) -> Option<Operation> {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn excute_correct() {
+        let instructions = parse("
+b inc 5 if a > 1
+a inc 1 if b < 5
+c dec -10 if a >= 1
+c inc -20 if c == 10");
+
+        assert_eq!(execute(&instructions), 1);
+    }
 
     #[test]
     fn parse_correct() {
