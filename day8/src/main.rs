@@ -44,6 +44,11 @@ fn main() {
 pub fn parse_line(line: &str) -> (Option<Instruction>, Option<Condition>) {
     let tokens: Vec<&str> = line.split(" if ")
         .map(|x| x.trim()).collect();
+
+    if tokens.len() != 2 {
+        return (None, None);
+    }
+
     let instruction = tokens[0];
     let condition = tokens[1];
 
@@ -96,18 +101,21 @@ mod test {
     use super::*;
 
     #[test]
+    fn parse_line_empty() {
+        assert_eq!(parse_line(""), (None, None));
+    }
+
+    #[test]
     fn parse_line_correct() {
         let (instruction, condition) = parse_line("g dec 231 if bfx > -10");
 
-        let instruction = instruction.unwrap();
-        let condition = condition.unwrap();
         assert_eq!(
             instruction,
-            Instruction::Dec(String::from("g"), 231)
+            Some(Instruction::Dec(String::from("g"), 231))
             );
         assert_eq!(
             condition,
-            Condition::Larger(String::from("bfx"), -10)
+            Some(Condition::Larger(String::from("bfx"), -10))
             );
     }
 }
