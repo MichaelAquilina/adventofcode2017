@@ -7,33 +7,19 @@ use clap::{Arg, App};
 
 
 #[derive(Debug, Eq, PartialEq)]
-pub enum Operator {
-    Inc(i32),
-    Dec(i32),
+pub enum Instruction {
+    Inc(String, i32),
+    Dec(String, i32),
 }
 
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct Instruction {
-    register: String,
-    operator: Operator,
-}
-
-
-#[derive(Debug, Eq, PartialEq)]
-pub enum Comparator {
-    Equal(i32),
-    Larger(i32),
-    LargerOrEqual(i32),
-    Smaller(i32),
-    SmallerOrEqual(i32),
-}
-
-
-#[derive(Debug, Eq, PartialEq)]
-pub struct Condition {
-    register: String,
-    comparator: Comparator,
+pub enum Condition {
+    Equal(String, i32),
+    Larger(String, i32),
+    LargerOrEqual(String, i32),
+    Smaller(String, i32),
+    SmallerOrEqual(String, i32),
 }
 
 
@@ -77,21 +63,14 @@ pub fn parse_condition(condition: &str) -> Option<Condition> {
     let register = tokens[0].to_string();
     let value: i32 = tokens[2].parse().unwrap();
 
-    let comparator = match tokens[1] {
-        "==" => Some(Comparator::Equal(value)),
-        ">" => Some(Comparator::Larger(value)),
-        ">=" => Some(Comparator::LargerOrEqual(value)),
-        "<" => Some(Comparator::Smaller(value)),
-        "<=" => Some(Comparator::SmallerOrEqual(value)),
+    match tokens[1] {
+        "==" => Some(Condition::Equal(register, value)),
+        ">" => Some(Condition::Larger(register, value)),
+        ">=" => Some(Condition::LargerOrEqual(register, value)),
+        "<" => Some(Condition::Smaller(register, value)),
+        "<=" => Some(Condition::SmallerOrEqual(register, value)),
         _ => None,
-    };
-
-    if comparator.is_none() {
-        return None;
     }
-    let comparator = comparator.unwrap();
-
-    Some(Condition { register, comparator })
 }
 
 
@@ -103,18 +82,12 @@ pub fn parse_instruction(instruction: &str) -> Option<Instruction> {
     }
 
     let register = tokens[0].to_string();
-    let operator = match tokens[1] {
-        "inc" => Some(Operator::Inc(tokens[2].parse().unwrap())),
-        "dec" => Some(Operator::Dec(tokens[2].parse().unwrap())),
+    let value = tokens[2].parse().unwrap();
+    match tokens[1] {
+        "inc" => Some(Instruction::Inc(register, value)),
+        "dec" => Some(Instruction::Dec(register, value)),
         _ => None,
-    };
-
-    if operator.is_none() {
-        return None;
     }
-    let operator = operator.unwrap();
-
-    Some(Instruction { register, operator })
 }
 
 
@@ -130,15 +103,11 @@ mod test {
         let condition = condition.unwrap();
         assert_eq!(
             instruction,
-            Instruction {
-                register: String::from("g"),
-                operator: Operator::Dec(231)
-            });
+            Instruction::Dec(String::from("g"), 231)
+            );
         assert_eq!(
             condition,
-            Condition {
-                register: String::from("bfx"),
-                comparator: Comparator::Larger(-10)
-            });
+            Condition::Larger(String::from("bfx"), -10)
+            );
     }
 }
