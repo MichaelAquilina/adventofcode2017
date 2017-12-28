@@ -1,5 +1,6 @@
 extern crate clap;
 
+use std::cmp;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -49,12 +50,13 @@ fn main() {
     let instructions = parse(&contents);
     let result = execute(&instructions);
 
-    println!("{}", result);
+    println!("{}, {}", result.0, result.1);
 }
 
 
-pub fn execute(instructions: &Vec<Instruction>) -> i32 {
+pub fn execute(instructions: &Vec<Instruction>) -> (i32, i32) {
     let mut registers: HashMap<&str, i32> = HashMap::new();
+    let mut max_value = i32::min_value();
 
     for instruct in instructions {
         let satisfied = match instruct.condition {
@@ -74,9 +76,14 @@ pub fn execute(instructions: &Vec<Instruction>) -> i32 {
             Operation::Dec(ref r, v) => *registers.entry(r).or_insert(0) -= v,
             Operation::Inc(ref r, v) => *registers.entry(r).or_insert(0) += v,
         };
+
+        max_value = cmp::max(
+            max_value,
+            *registers.iter().max_by_key(|x| *x.1).unwrap().1
+        );
     }
 
-    *registers.iter().max_by_key(|x| *x.1).unwrap().1
+    (*registers.iter().max_by_key(|x| *x.1).unwrap().1, max_value)
 }
 
 
@@ -165,7 +172,7 @@ a inc 1 if b < 5
 c dec -10 if a >= 1
 c inc -20 if c == 10");
 
-        assert_eq!(execute(&instructions), 1);
+        assert_eq!(execute(&instructions), (1, 10));
     }
 
     #[test]
