@@ -7,7 +7,7 @@ use clap::{Arg, App};
 
 
 #[derive(Debug, Eq, PartialEq)]
-pub enum Instruction {
+pub enum Operation {
     Inc(String, i32),
     Dec(String, i32),
 }
@@ -20,6 +20,13 @@ pub enum Condition {
     LargerOrEqual(String, i32),
     Smaller(String, i32),
     SmallerOrEqual(String, i32),
+}
+
+
+#[derive(Debug, Eq, PartialEq)]
+pub struct Instruction {
+    pub operation: Operation,
+    pub condition: Condition,
 }
 
 
@@ -37,24 +44,30 @@ fn main() {
     file.read_to_string(&mut contents).unwrap();
     contents = contents.trim().to_string();
 
+    let instructions = parse(&contents);
+
     println!("{}", contents);
 }
 
 
-pub fn parse(contents: &str) -> Vec<(Instruction, Condition)> {
+pub fn parse(contents: &str) -> Vec<Instruction> {
     let mut result = Vec::new();
     for line in contents.lines() {
-        let (instruction, condition) = parse_line(line);
+        let (operation, condition) = parse_line(line);
 
-        if instruction.is_some() && condition.is_some() {
-            result.push((instruction.unwrap(), condition.unwrap()));
+        if operation.is_some() && condition.is_some() {
+            result.push(
+                Instruction {
+                    operation: operation.unwrap(),
+                    condition: condition.unwrap(),
+                });
         }
     }
     result
 }
 
 
-pub fn parse_line(line: &str) -> (Option<Instruction>, Option<Condition>) {
+pub fn parse_line(line: &str) -> (Option<Operation>, Option<Condition>) {
     let tokens: Vec<&str> = line.split(" if ")
         .map(|x| x.trim()).collect();
 
@@ -62,13 +75,13 @@ pub fn parse_line(line: &str) -> (Option<Instruction>, Option<Condition>) {
         return (None, None);
     }
 
-    let instruction = tokens[0];
+    let operation = tokens[0];
     let condition = tokens[1];
 
-    let instruction = parse_instruction(&instruction);
+    let operation = parse_operation(&operation);
     let condition = parse_condition(&condition);
 
-    (instruction, condition)
+    (operation, condition)
 }
 
 pub fn parse_condition(condition: &str) -> Option<Condition> {
@@ -92,8 +105,8 @@ pub fn parse_condition(condition: &str) -> Option<Condition> {
 }
 
 
-pub fn parse_instruction(instruction: &str) -> Option<Instruction> {
-    let tokens: Vec<&str> = instruction.split(" ").collect();
+pub fn parse_operation(operation: &str) -> Option<Operation> {
+    let tokens: Vec<&str> = operation.split(" ").collect();
 
     if tokens.len() != 3 {
         return None;
@@ -102,8 +115,8 @@ pub fn parse_instruction(instruction: &str) -> Option<Instruction> {
     let register = tokens[0].to_string();
     let value = tokens[2].parse().unwrap();
     match tokens[1] {
-        "inc" => Some(Instruction::Inc(register, value)),
-        "dec" => Some(Instruction::Dec(register, value)),
+        "inc" => Some(Operation::Inc(register, value)),
+        "dec" => Some(Operation::Dec(register, value)),
         _ => None,
     }
 }
@@ -123,20 +136,20 @@ jq inc 880 if a < 2");
         assert_eq!(result.len(), 3);
 
         assert_eq!(
-            result[0], (
-                Instruction::Dec(String::from("g"), 231),
-                Condition::Larger(String::from("bfx"), -10)
-            ));
+            result[0], Instruction {
+                operation: Operation::Dec(String::from("g"), 231),
+                condition: Condition::Larger(String::from("bfx"), -10)
+            });
         assert_eq!(
-            result[1], (
-                Instruction::Dec(String::from("k"), -567),
-                Condition::Equal(String::from("wfk"), 0),
-            ));
+            result[1], Instruction {
+                operation: Operation::Dec(String::from("k"), -567),
+                condition: Condition::Equal(String::from("wfk"), 0),
+            });
         assert_eq!(
-            result[2], (
-                Instruction::Inc(String::from("jq"), 880),
-                Condition::Smaller(String::from("a"), 2),
-            ));
+            result[2], Instruction {
+                operation: Operation::Inc(String::from("jq"), 880),
+                condition: Condition::Smaller(String::from("a"), 2),
+            });
     }
 
     #[test]
@@ -146,11 +159,11 @@ jq inc 880 if a < 2");
 
     #[test]
     fn parse_line_correct() {
-        let (instruction, condition) = parse_line("g dec 231 if bfx > -10");
+        let (operation, condition) = parse_line("g dec 231 if bfx > -10");
 
         assert_eq!(
-            instruction,
-            Some(Instruction::Dec(String::from("g"), 231))
+            operation,
+            Some(Operation::Dec(String::from("g"), 231))
             );
         assert_eq!(
             condition,
