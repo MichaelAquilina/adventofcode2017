@@ -41,6 +41,19 @@ fn main() {
 }
 
 
+pub fn parse(contents: &str) -> Vec<(Instruction, Condition)> {
+    let mut result = Vec::new();
+    for line in contents.lines() {
+        let (instruction, condition) = parse_line(line);
+
+        if instruction.is_some() && condition.is_some() {
+            result.push((instruction.unwrap(), condition.unwrap()));
+        }
+    }
+    result
+}
+
+
 pub fn parse_line(line: &str) -> (Option<Instruction>, Option<Condition>) {
     let tokens: Vec<&str> = line.split(" if ")
         .map(|x| x.trim()).collect();
@@ -99,6 +112,32 @@ pub fn parse_instruction(instruction: &str) -> Option<Instruction> {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn parse_correct() {
+        let result = parse("
+g dec 231 if bfx > -10
+k dec -567 if wfk == 0
+jq inc 880 if a < 2");
+
+        assert_eq!(result.len(), 3);
+
+        assert_eq!(
+            result[0], (
+                Instruction::Dec(String::from("g"), 231),
+                Condition::Larger(String::from("bfx"), -10)
+            ));
+        assert_eq!(
+            result[1], (
+                Instruction::Dec(String::from("k"), -567),
+                Condition::Equal(String::from("wfk"), 0),
+            ));
+        assert_eq!(
+            result[2], (
+                Instruction::Inc(String::from("jq"), 880),
+                Condition::Smaller(String::from("a"), 2),
+            ));
+    }
 
     #[test]
     fn parse_line_empty() {
